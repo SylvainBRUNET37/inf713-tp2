@@ -8,56 +8,12 @@
 
 #include <algorithm>
 #include <array>
-#include <cstdio>
 #include <format>
 #include <iostream>
 #include <memory>
-#include <random> // Pour generer l'image avec bruit
 
 #include "Data.h"
-#include "ImageIO.h"
-
-constexpr int minIntensity = 0;
-constexpr int maxIntensity = 255;
-
-namespace
-{
-    [[nodiscard]] bool GenererImageBruitee(const ImageInfo& imageOriginal, const char* filename)
-    {
-        std::mt19937 rng(0);
-        std::uniform_int_distribution<std::mt19937::result_type> IsNoiseRandom(
-            1, 100); // distribution in range [1, 100]
-        std::uniform_int_distribution<std::mt19937::result_type> blackWhiteRandom(
-            0, 1); // distribution in range [0, 1]
-
-        const int tailleImage = imageOriginal.tailleX * imageOriginal.tailleY;
-        ImageInfo resultatInfo
-    	{
-            new uint8_t[tailleImage],
-            imageOriginal.tailleX,
-            imageOriginal.tailleY,
-            imageOriginal.nbCanaux
-        };
-
-        for (int i = 0; i < tailleImage; ++i)
-        {
-            const uint8_t value = imageOriginal.pixels[i];
-
-            if (IsNoiseRandom(rng) != 100)
-            {
-                resultatInfo.pixels[i] = value;
-            }
-            else
-            {
-                resultatInfo.pixels[i] =
-                    blackWhiteRandom(rng) ? maxIntensity : minIntensity;
-            }
-        }
-
-        return ImageIO::EcrireImage(resultatInfo, filename);
-    }
-}
-
+#include "ImageUtils.h"
 
 int main()
 {
@@ -68,8 +24,8 @@ int main()
     /////////////////////////////////////////////////////////
 
     static constexpr auto INPUT_FILE_NAME = "barbara.png";
-    const auto imageInfo = ImageIO::LireImage(INPUT_FILE_NAME);
-    if (not imageInfo)
+    const auto baseImage = ImageUtils::LireImage(INPUT_FILE_NAME);
+    if (not baseImage)
     {
         cerr << format("Erreur de lecture de l'image {}", INPUT_FILE_NAME);
         return EXIT_FAILURE;
@@ -84,6 +40,60 @@ int main()
     //      barbara_flou.png. Utiliser un sigma = 1.0.
     //      Note: http://dev.theomader.com/gaussian-kernel-calculator/
     //            Pour les coefficients gaussiens.
+
+    static constexpr float SIGMA_SQUARED = 1.0f;
+    static constexpr float DENO = (2 * SIGMA_SQUARED);
+    vector<uint8_t> blurredPixels(baseImage->GetImageSize(), 0);
+
+    const auto computeIndex = [](
+        const auto xIndice, const auto yIndice, const auto sizeY)
+    {
+    	return xIndice * sizeY + yIndice;
+    };
+
+    const auto computePixelX = [](
+        const auto indice, const auto sizeY)
+    {
+    	return indice / sizeY;
+    };
+
+    const auto computePixelY = [](
+        const auto indice, const auto sizeX)
+    {
+    	return indice / sizeX;
+    };
+
+    static constexpr auto SIZE_X = 5;
+    static constexpr auto SIZE_Y = 5;
+    for (int blurryPixelIndice = 0; cmp_less(blurryPixelIndice, blurredPixels.size()); ++blurryPixelIndice)
+    {
+        for (int xIndice = blurryPixelIndice - SIZE_X / 2; xIndice < blurryPixelIndice + SIZE_X / 2; ++xIndice)
+        {
+            for (int yIndice = blurryPixelIndice - SIZE_Y / 2; yIndice < blurryPixelIndice + SIZE_Y / 2; ++yIndice)
+            {
+                const int sampleIndice = computeIndex(xIndice, yIndice, SIZE_Y);
+                const int sample = baseImage->pixels[sampleIndice];
+
+                const int pixelDiffX = abs(
+                    computePixelX(blurryPixelIndice, baseImage->tailleY) - 
+						computePixelX(sampleIndice, baseImage->tailleY));
+                const int pixelDiffY = abs(
+                    computePixelY(blurryPixelIndice, baseImage->tailleY) - 
+                    computePixelY(sampleIndice, baseImage->tailleY));
+
+                const int squaredDistance = pow(pixelDiffX, 2) + pow(pixelDiffY, 2);
+                	
+            	blurredPixels[blurryPixelIndice] += exp(squaredDistance / DENO);
+
+                // TODO: check bounds + conversions
+            }
+        }
+
+        for (const uint8_t baseImagePixel : baseImage->pixels)
+        {
+	        
+        }
+    }
 
     // 2a - Appliquer un filtre Sobel en X. Ecrire le resultat dans
     //      le fichier Gx.png.

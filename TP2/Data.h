@@ -6,6 +6,9 @@
 
 struct ImageInfo
 {
+	static constexpr int MIN_INTENSITY = 0;
+	static constexpr int MAX_INTENSITY = 255;
+
 	std::vector<uint8_t> pixels;
 	int tailleX{}; // nb de pixel en X
 	int tailleY{}; // nb de pixel en Y
@@ -14,6 +17,7 @@ struct ImageInfo
 	ImageInfo(const uint8_t* data, int tailleX, int tailleY, int nbCanaux);
 
 	[[nodiscard]] size_t GetDataSize() const noexcept { return static_cast<size_t>(tailleX) * tailleY * nbCanaux; }
+	[[nodiscard]] size_t GetImageSize() const noexcept { return static_cast<size_t>(tailleX) * tailleY; }
 };
 
 #endif

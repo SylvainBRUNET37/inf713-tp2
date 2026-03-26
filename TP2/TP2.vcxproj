@@ -152,13 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Data.cpp" />
-    <ClCompile Include="ImageIO.cpp" />
+    <ClCompile Include="ImageUtils.cpp" />
     <ClCompile Include="stb_implementation.cpp" />
     <ClCompile Include="tp2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Data.h" />
-    <ClInclude Include="ImageIO.h" />
+    <ClInclude Include="ImageUtils.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stb_image_write.h" />
   </ItemGroup>

@@ -1,11 +1,11 @@
-﻿#ifndef IMAGE_IO_H
-#define IMAGE_IO_H
+﻿#ifndef IMAGE_UTILS_H
+#define IMAGE_UTILS_H
 
 #include <optional>
 
 #include "Data.h"
 
-namespace ImageIO
+namespace ImageUtils
 {
 	// LireImage
 	// en entree
@@ -22,6 +22,8 @@ namespace ImageIO
 	// en sortie
 	//  0 indique un echec. != 0 indique un succes.
 	[[nodiscard]] bool EcrireImage(const ImageInfo& imageInfo, const char* filename);
+
+	[[nodiscard]] bool GenererImageBruitee(const ImageInfo& imageOriginal, const char* filename);
 }
 
 #endif
