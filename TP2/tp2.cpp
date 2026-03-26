@@ -1,127 +1,78 @@
+////////////////////////////////////////////////////////////
+// NOM: Sylvan Brunet
+// Compiler   : Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33145 for x86
+// C++ Version: c++20
+// INF 713 - TP 2 
+// A mettre le 20 avril 2026 ?
 /////////////////////////////////////////////////////////
-// NOM:
-// INF 713 - TP 2
-// A mettre le 20 avril 2020
-/////////////////////////////////////////////////////////
-
-#include "stb_image.h"
-#include "stb_image_write.h"
 
 #include <algorithm>
 #include <array>
-#include <limits>
-#include <memory>
-
-#include <cassert>
 #include <cstdio>
-#include <cstdlib>
+#include <format>
+#include <iostream>
+#include <memory>
+#include <random> // Pour generer l'image avec bruit
 
-// Pour generer l'image avec bruit.
-#include <random>
+#include "Data.h"
+#include "ImageIO.h"
 
 constexpr int minIntensity = 0;
 constexpr int maxIntensity = 255;
 
-struct ImageInfo
+namespace
 {
-    ImageInfo() 
-        : data(nullptr)
-        , tailleX(0)
-        , tailleY(0)
-        , nbCanaux(0)
-    {}
-
-    uint8_t* data;
-    int tailleX;  // nb de pixel en X
-    int tailleY;  // nb de pixel en Y
-    int nbCanaux; // nb de canaux par pixel. Ici 1, parce que l'image est en
-                  // noir et blanc
-};
-
-// LireImage
-// en entree
-// - filename : le nom du fichier a lire sur le disque.
-// - imageInfo : recevera le contenue de l'image lue sur le disque
-// en sortie
-// 0 indique un echec. != 0 indique un succes.
-int LireImage(const char* filename, ImageInfo* outImageInfo)
-{
-    assert(filename);
-    assert(outImageInfo);
-
-    // Nombre de canaux desirer. Si la valeur est 0, retourne le nombre de
-    // canaux dans l'image.
-    const int nbCanauxDesire = 0;
-    outImageInfo->data = static_cast<uint8_t*>(
-        stbi_load(filename, &outImageInfo->tailleX, &outImageInfo->tailleY,
-                  &outImageInfo->nbCanaux, nbCanauxDesire));
-
-    return outImageInfo->data ? 1 : 0;
-}
-
-// EcrireImage
-// en entree
-// - imageInfo : l'image a ecrire sur disque.
-// - filename : le nom du fichier a ecrire sur le disque.
-// en sortie
-//  0 indique un echec. != 0 indique un succes.
-int EcrireImage(const ImageInfo imageInfo, const char* filename)
-{
-    assert(filename);
-
-    const int byteParPixel = 1;
-    // Taille en byte d 'une ligne horizontale de l'image
-    const int strideEnByte = byteParPixel * imageInfo.tailleX;
-    return stbi_write_png(filename, imageInfo.tailleX, imageInfo.tailleY,
-                          imageInfo.nbCanaux, (void*)imageInfo.data,
-                          strideEnByte);
-}
-
-void GenererImageBruitee(const ImageInfo& imageOriginal, const char* filename)
-{
-    std::mt19937 rng(0);
-    std::uniform_int_distribution<std::mt19937::result_type> IsNoiseRandom(
-        1, 100); // distribution in range [1, 100]
-    std::uniform_int_distribution<std::mt19937::result_type> blackWhiteRandom(
-        0, 1); // distribution in range [0, 1]
-
-    int tailleImage = imageOriginal.tailleX * imageOriginal.tailleY;
-    ImageInfo resultatInfo;
-    resultatInfo.tailleX = imageOriginal.tailleX;
-    resultatInfo.tailleY = imageOriginal.tailleY;
-    resultatInfo.nbCanaux = imageOriginal.nbCanaux;
-    std::unique_ptr<uint8_t[]> data(new uint8_t[tailleImage]);
-    resultatInfo.data = data.get();
-
-    for (int i = 0; i < tailleImage; ++i)
+    [[nodiscard]] bool GenererImageBruitee(const ImageInfo& imageOriginal, const char* filename)
     {
-        uint8_t value = imageOriginal.data[i];
+        std::mt19937 rng(0);
+        std::uniform_int_distribution<std::mt19937::result_type> IsNoiseRandom(
+            1, 100); // distribution in range [1, 100]
+        std::uniform_int_distribution<std::mt19937::result_type> blackWhiteRandom(
+            0, 1); // distribution in range [0, 1]
 
-        if (IsNoiseRandom(rng) != 100)
+        const int tailleImage = imageOriginal.tailleX * imageOriginal.tailleY;
+        ImageInfo resultatInfo
+    	{
+            new uint8_t[tailleImage],
+            imageOriginal.tailleX,
+            imageOriginal.tailleY,
+            imageOriginal.nbCanaux
+        };
+
+        for (int i = 0; i < tailleImage; ++i)
         {
-            resultatInfo.data[i] = value;
+            const uint8_t value = imageOriginal.pixels[i];
+
+            if (IsNoiseRandom(rng) != 100)
+            {
+                resultatInfo.pixels[i] = value;
+            }
+            else
+            {
+                resultatInfo.pixels[i] =
+                    blackWhiteRandom(rng) ? maxIntensity : minIntensity;
+            }
         }
-        else
-        {
-            resultatInfo.data[i] =
-                blackWhiteRandom(rng) ? maxIntensity : minIntensity;
-        }
+
+        return ImageIO::EcrireImage(resultatInfo, filename);
     }
-
-    EcrireImage(resultatInfo, filename);
 }
+
 
 int main()
 {
+    using namespace std;
+
     /////////////////////////////////////////////////////////
     // Charger une image en memoire
     /////////////////////////////////////////////////////////
-    const char* filename = "barbara.png";
-    ImageInfo imageInfo;
-    const int result = LireImage(filename, &imageInfo);
-    if (result == 0) {
-        std::printf("Erreur de lecture de l'image %s", filename);
-        std::exit(1);
+
+    static constexpr auto INPUT_FILE_NAME = "barbara.png";
+    const auto imageInfo = ImageIO::LireImage(INPUT_FILE_NAME);
+    if (not imageInfo)
+    {
+        cerr << format("Erreur de lecture de l'image {}", INPUT_FILE_NAME);
+        return EXIT_FAILURE;
     }
 
     /////////////////////////////////////////////////////////
