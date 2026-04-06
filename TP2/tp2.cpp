@@ -15,6 +15,7 @@
 #include <ranges>
 
 #include "Data.h"
+#include "GausianBlur.h"
 #include "ImageUtils.h"
 
 int main()
@@ -43,95 +44,7 @@ int main()
 	//      Note: http://dev.theomader.com/gaussian-kernel-calculator/
 	//            Pour les coefficients gaussiens.
 
-	static constexpr float SIGMA_SQUARED = 1.0f;
-	static constexpr float DENO = 2 * SIGMA_SQUARED;
-
-	static constexpr int KERNEL_SIZE_X = 5;
-	static constexpr int KERNEL_SIZE_Y = 5;
-
-	const auto& baseImagePixels = baseImage->pixels;
-	const auto baseImageSizeX = baseImage->tailleX;
-	const auto baseImageSizeY = baseImage->tailleY;
-
-	vector blurredPixels(baseImage->GetImageSize(), 0.0f);
-
-	const auto computeIndice = [](
-		auto xIndice, auto yIndice, const auto xSize, const auto ySize)
-		{
-			xIndice = (xIndice % xSize + xSize) % xSize;
-			yIndice = (yIndice % ySize + ySize) % ySize;
-
-			const auto result = xIndice + yIndice * xSize;
-			assert(result >= 0 && result < xSize * ySize);
-
-			return result;
-		};
-
-
-	for (int blurryPixelX = 0; blurryPixelX < baseImageSizeX; ++blurryPixelX)
-	{
-		for (int blurryPixelY = 0; blurryPixelY < baseImageSizeY; ++blurryPixelY)
-		{
-			float weightSum = 0.0f;
-
-			// Current pixel
-			const int blurredPixelIndice = 
-				computeIndice(blurryPixelX, blurryPixelY, baseImageSizeX, baseImageSizeY);
-
-			const float sample1 = baseImagePixels[blurredPixelIndice];
-			const float weight1 = exp(0.0f);
-
-			blurredPixels[blurredPixelIndice] += sample1 * weight1;
-			weightSum += weight1;
-
-			// X
-			for (const int xIndice : views::iota(-KERNEL_SIZE_X / 2, KERNEL_SIZE_X / 2 + 1))
-			{
-				if (xIndice == 0) continue;
-
-				const int indice = 
-					computeIndice(blurryPixelX + xIndice, blurryPixelY, baseImageSizeX, baseImageSizeY);
-
-				const float sample = baseImagePixels[indice];
-				const float form = static_cast<float>(xIndice * xIndice) / DENO;
-				const float weight = exp(-form);
-
-				blurredPixels[blurredPixelIndice] += sample * weight;
-				weightSum += weight;
-			}
-
-			// Y
-			for (const int yIndice : views::iota(-KERNEL_SIZE_Y / 2, KERNEL_SIZE_Y / 2 + 1))
-			{
-				if (yIndice == 0) continue;
-
-				const int indice = 
-					computeIndice(blurryPixelX, blurryPixelY + yIndice, baseImageSizeX, baseImageSizeY);
-
-				const float sample = baseImagePixels[indice];
-				const float form = static_cast<float>(yIndice * yIndice) / DENO;
-				const float weight = exp(-form);
-
-				blurredPixels[blurredPixelIndice] += sample * weight;
-				weightSum += weight;
-			}
-
-			blurredPixels[blurredPixelIndice] /= weightSum;
-		}
-	}
-
-	auto blurredImage = *baseImage;
-	for (size_t i = 0; i < blurredImage.GetImageSize(); ++i)
-	{
-		blurredImage.pixels[i] = static_cast<uint8_t>(blurredPixels[i]);
-	}
-
-	static constexpr auto BLURRED_FILE_NAME = "barbara_flou.png";
-	if (not ImageUtils::EcrireImage(blurredImage, BLURRED_FILE_NAME))
-	{
-		cerr << format("Erreur de lecture de l'image {}", BLURRED_FILE_NAME);
-		return EXIT_FAILURE;
-	}
+	GausianBlur f{ *baseImage };// TODO: make it works with pair kernel size + refactor
 
 	// 2a - Appliquer un filtre Sobel en X. Ecrire le resultat dans
 	//      le fichier Gx.png.
@@ -200,3 +113,82 @@ for (int blurryPixelIndice = 0; cmp_less(blurryPixelIndice, blurredPixels.size()
     }
 }
 */
+
+/*
+	static constexpr float SIGMA_SQUARED = 1.0f;
+	static constexpr float DENO = 2 * SIGMA_SQUARED;
+
+	static constexpr int KERNEL_SIZE_X = 5;
+	static constexpr int KERNEL_SIZE_Y = 5;
+
+	const auto& baseImagePixels = baseImage->pixels;
+	const auto baseImageSizeX = baseImage->tailleX;
+	const auto baseImageSizeY = baseImage->tailleY;
+
+	vector blurredPixels(baseImage->GetImageSize(), 0.0f);
+
+	const auto computeIndice = [](
+		auto xIndice, auto yIndice, const auto xSize, const auto ySize)
+		{
+			xIndice = (xIndice % xSize + xSize) % xSize;
+			yIndice = (yIndice % ySize + ySize) % ySize;
+
+			const auto result = xIndice + yIndice * xSize;
+			assert(result >= 0 && result < xSize * ySize);
+
+			return result;
+		};
+
+
+	for (int blurryPixelX = 0; blurryPixelX < baseImageSizeX; ++blurryPixelX)
+	{
+		for (int blurryPixelY = 0; blurryPixelY < baseImageSizeY; ++blurryPixelY)
+		{
+			float weightSum = 0.0f;
+
+			// Current pixel
+			const int blurredPixelIndice =
+				computeIndice(blurryPixelX, blurryPixelY, baseImageSizeX, baseImageSizeY);
+
+			const float sample1 = baseImagePixels[blurredPixelIndice];
+			const float weight1 = exp(0.0f);
+
+			blurredPixels[blurredPixelIndice] += sample1 * weight1;
+			weightSum += weight1;
+
+			// X
+			for (const int xIndice : views::iota(-KERNEL_SIZE_X / 2, KERNEL_SIZE_X / 2 + 1))
+			{
+				if (xIndice == 0) continue;
+
+				const int indice =
+					computeIndice(blurryPixelX + xIndice, blurryPixelY, baseImageSizeX, baseImageSizeY);
+
+				const float sample = baseImagePixels[indice];
+				const float form = static_cast<float>(xIndice * xIndice) / DENO;
+				const float weight = exp(-form);
+
+				blurredPixels[blurredPixelIndice] += sample * weight;
+				weightSum += weight;
+			}
+
+			// Y
+			for (const int yIndice : views::iota(-KERNEL_SIZE_Y / 2, KERNEL_SIZE_Y / 2 + 1))
+			{
+				if (yIndice == 0) continue;
+
+				const int indice =
+					computeIndice(blurryPixelX, blurryPixelY + yIndice, baseImageSizeX, baseImageSizeY);
+
+				const float sample = baseImagePixels[indice];
+				const float form = static_cast<float>(yIndice * yIndice) / DENO;
+				const float weight = exp(-form);
+
+				blurredPixels[blurredPixelIndice] += sample * weight;
+				weightSum += weight;
+			}
+
+			blurredPixels[blurredPixelIndice] /= weightSum;
+		}
+	}
+	*/
