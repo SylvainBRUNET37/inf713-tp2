@@ -1,43 +1,52 @@
 #include "GausianBlur.h"
 
 #include <algorithm>
+#include <cassert>
 #include <format>
-#include <iostream>
 
 #include "ImageUtils.h"
 
-GausianBlur::GausianBlur(ImageInfo image) :
-	blurredImage{std::move(image)},
-	blurredPixels(blurredImage.GetImageSize(), 0.0f)
+GaussianBlur::GaussianBlur(ImageInfo imageToBlur, const GausianBlurSettings settings) :
+	image{std::move(imageToBlur)},
+	kernel(settings.kernelSize, 0.0f),
+	pixels(image.GetImageSize(), 0.0f),
+	settings{settings}
 {
-	const auto kernel = ComputeKernel();
-
-	HorizontalPass(kernel);
-	VerticalPass(kernel);
-
-	for (size_t i = 0; i < blurredImage.GetImageSize(); ++i)
-	{
-		blurredImage.pixels[i] = static_cast<uint8_t>(blurredPixels[i]);
-	}
-
-	if (not ImageUtils::EcrireImage(blurredImage, "bbr.png"))
-	{
-		std::cerr << std::format("Erreur de lecture de l'image {}", "bbr.png");
-	}
 }
 
-std::vector<float> GausianBlur::ComputeKernel()
-{
-	std::vector kernel(KERNEL_SIZE, 0.0f);
+// Gaussian blur
 
+ImageInfo GaussianBlur::Apply(ImageInfo imageToBlur, const GausianBlurSettings blurSettings)
+{
+	assert(blurSettings.kernelSize % 2 != 0 && "Cannot blur image with a pair kernel size");
+
+	return GaussianBlur{ std::move(imageToBlur), blurSettings }.BlurImage();
+}
+
+ImageInfo GaussianBlur::BlurImage()
+{
+	ComputeKernel();
+	GaussianHorizontalPass();
+	GaussianVerticalPass();
+
+	for (size_t i = 0; i < image.GetImageSize(); ++i)
+	{
+		image.pixels[i] = static_cast<uint8_t>(pixels[i]);
+	}
+
+	return std::move(image);
+}
+
+void GaussianBlur::ComputeKernel()
+{
 	float weightSum = 0.0f;
 	ForEachKernelSample([&](const int sampleIndice)
 	{
 		const float distance = static_cast<float>(sampleIndice * sampleIndice);
-		const float weight = std::exp(-distance / DENO);
+		const float weight = std::exp(-distance / settings.GausianDenominator());
 
 		weightSum += weight;
-		kernel[sampleIndice + KERNEL_RADIUS] = weight;
+		kernel[sampleIndice + settings.KernelRadius()] = weight;
 	});
 
 	for (auto& weight : kernel)
@@ -47,88 +56,77 @@ std::vector<float> GausianBlur::ComputeKernel()
 			weight /= weightSum;
 		}
 	}
-
-	return kernel;
 }
 
-void GausianBlur::HorizontalPass(const std::vector<float>& kernel)
+void GaussianBlur::GaussianHorizontalPass()
 {
-	ForEachImagePixel([&](const int indiceX, const int indiceY)
+	ForEachPixel([&](const int indiceX, const int indiceY)
 	{
 		float weightSum = 0.0f;
 
 		ForEachKernelSample([&](const int sampleIndice)
 		{
 			const auto sampleX = std::clamp(
-				indiceX + sampleIndice, 0, blurredImage.tailleX - 1);
-			const size_t baseImageIndice = sampleX + indiceY * blurredImage.tailleX;
+				indiceX + sampleIndice, 0, image.tailleX - 1);
+			const size_t baseImageIndice = sampleX + indiceY * image.tailleX;
 
-			const float baseImagePixel = blurredImage.pixels[baseImageIndice];
-			const float weight = kernel[sampleIndice + KERNEL_RADIUS];
+			const float baseImagePixel = image.pixels[baseImageIndice];
+			const float weight = kernel[sampleIndice + settings.KernelRadius()];
 
 			weightSum += baseImagePixel * weight;
 		});
 
-		const int imageIndice = ComputeIndice(indiceX, indiceY, blurredImage.tailleX);
-		blurredPixels[imageIndice] = weightSum;
+		const int imageIndice = ComputeIndice(indiceX, indiceY, image.tailleX);
+		pixels[imageIndice] = weightSum;
 	});
 }
 
-void GausianBlur::VerticalPass(const std::vector<float>& kernel)
+void GaussianBlur::GaussianVerticalPass()
 {
-	ForEachImagePixel([&](const int indiceX, const int indiceY)
+	ForEachPixel([&](const int indiceX, const int indiceY)
 	{
 		float weightSum = 0.0f;
 
 		ForEachKernelSample([&](const int sampleIndice)
 		{
 			const auto sampleY = std::clamp(
-				indiceY + sampleIndice, 0, blurredImage.tailleY - 1);
-			const size_t imageIndice = indiceX + sampleY * blurredImage.tailleX;
+				indiceY + sampleIndice, 0, image.tailleY - 1);
+			const size_t imageIndice = indiceX + sampleY * image.tailleX;
 
-			const float imagePixel = blurredPixels[imageIndice];
-			const float weight = kernel[sampleIndice + KERNEL_RADIUS];
+			const float imagePixel = pixels[imageIndice];
+			const float weight = kernel[sampleIndice + settings.KernelRadius()];
 
 			weightSum += imagePixel * weight;
 		});
 
-		const int imageIndice = ComputeIndice(indiceX, indiceY, blurredImage.tailleX);
-		blurredPixels[imageIndice] = weightSum;
+		const int imageIndice = ComputeIndice(indiceX, indiceY, image.tailleX);
+		pixels[imageIndice] = weightSum;
 	});
 }
 
 // Utils
 
-int GausianBlur::ComputeIndice(const int xIndice, const int yIndice, const int xSize)
+int GaussianBlur::ComputeIndice(const int xIndice, const int yIndice, const int xSize)
 {
 	return xIndice + yIndice * xSize;
 }
 
-void GausianBlur::ForEachPixelKernel(const std::function<void(int, int, int)>& function) const
+void GaussianBlur::ForEachPixel(const std::function<void(int, int)>& function) const
 {
-	ForEachImagePixel([this, &function](const int indiceX, const int indiceY)
+	for (int indiceX = 0; indiceX < image.tailleX; ++indiceX)
 	{
-		ForEachKernelSample([this, &function, indiceX, indiceY](const int sampleIndice)
-		{
-			function(indiceX, indiceY, sampleIndice);
-		});
-	});
-}
-
-void GausianBlur::ForEachImagePixel(const std::function<void(int, int)>& function) const
-{
-	for (int indiceX = 0; indiceX < blurredImage.tailleX; ++indiceX)
-	{
-		for (int indiceY = 0; indiceY < blurredImage.tailleY; ++indiceY)
+		for (int indiceY = 0; indiceY < image.tailleY; ++indiceY)
 		{
 			function(indiceX, indiceY);
 		}
 	}
 }
 
-void GausianBlur::ForEachKernelSample(const std::function<void(int)>& function)
+void GaussianBlur::ForEachKernelSample(const std::function<void(int)>& function) const
 {
-	for (int sampleIndice = -KERNEL_RADIUS; sampleIndice <= KERNEL_RADIUS; ++sampleIndice)
+	const auto kernelRadius = settings.KernelRadius();
+
+	for (int sampleIndice = -kernelRadius; sampleIndice <= kernelRadius; ++sampleIndice)
 	{
 		function(sampleIndice);
 	}

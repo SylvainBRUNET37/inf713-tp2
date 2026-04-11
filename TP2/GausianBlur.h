@@ -5,28 +5,43 @@
 
 #include "Data.h"
 
-class GausianBlur
+class GaussianBlur
 {
 public:
-	explicit GausianBlur(ImageInfo image);
+	struct GausianBlurSettings
+	{
+		float simga = 1.0f;
+		int kernelSize = 5;
+
+		[[nodiscard]] constexpr int KernelRadius() const
+		{
+			return kernelSize / 2;
+		}
+
+		[[nodiscard]] constexpr float GausianDenominator() const
+		{
+			return 2.0f * simga * simga;
+		}
+	};
+
+	[[nodiscard]] static ImageInfo Apply(ImageInfo image, GausianBlurSettings settings = {});
 
 private:
-	static constexpr float SIGMA_SQUARED = 1.0f;
-	static constexpr float DENO = 2 * SIGMA_SQUARED;
+	ImageInfo image;
+	std::vector<float> kernel;
+	std::vector<float> pixels;
+	GausianBlurSettings settings;
 
-	static constexpr int KERNEL_SIZE = 31;
-	static constexpr int KERNEL_RADIUS = KERNEL_SIZE / 2;
+	explicit GaussianBlur(ImageInfo imageToBlur, GausianBlurSettings settings = {});
 
-	ImageInfo blurredImage;
-	std::vector<float> blurredPixels;
+	[[nodiscard]] ImageInfo BlurImage();
 
-	void VerticalPass(const std::vector<float>& kernel);
-	void HorizontalPass(const std::vector<float>& kernel);
+	void ComputeKernel();
+	void GaussianHorizontalPass();
+	void GaussianVerticalPass();
 
-	void ForEachPixelKernel(const std::function<void(int, int, int)>& function) const;
-	void ForEachImagePixel(const std::function<void(int, int)>& function) const;
-	static void ForEachKernelSample(const std::function<void(int)>& function);
+	void ForEachPixel(const std::function<void(int, int)>& function) const;
+	void ForEachKernelSample(const std::function<void(int)>& function) const;
 
-	[[nodiscard]] static std::vector<float> ComputeKernel();
 	[[nodiscard]] static int ComputeIndice(int xIndice, int yIndice, int xSize);
 };

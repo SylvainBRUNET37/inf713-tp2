@@ -44,7 +44,11 @@ int main()
 	//      Note: http://dev.theomader.com/gaussian-kernel-calculator/
 	//            Pour les coefficients gaussiens.
 
-	GausianBlur f{ *baseImage };// TODO: make it works with pair kernel size + refactor
+	static constexpr auto BLURRED_IMAGE_FILE = "barbara_flou.png";
+	if (not ImageUtils::EcrireImage(GaussianBlur::Apply(*baseImage), BLURRED_IMAGE_FILE))
+	{
+		std::cerr << std::format("Erreur de lecture de l'image {}", BLURRED_IMAGE_FILE);
+	}
 
 	// 2a - Appliquer un filtre Sobel en X. Ecrire le resultat dans
 	//      le fichier Gx.png.
