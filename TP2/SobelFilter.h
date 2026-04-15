@@ -9,11 +9,11 @@
 class SobelFilter
 {
 public:
-    explicit SobelFilter(ImageInfo baseImage);
+    explicit SobelFilter(const ImageInfo& baseImage);
 
-    [[nodiscard]] ImageInfo GetHorizontalFilteredImage();
-    [[nodiscard]] ImageInfo GetVerticalFilteredImage();
-    [[nodiscard]] ImageInfo Get();
+    [[nodiscard]] ImageInfo GetHorizontalFilteredImage() const;
+    [[nodiscard]] ImageInfo GetVerticalFilteredImage() const;
+    [[nodiscard]] ImageInfo Get() const;
 
 private:
 	static constexpr auto KERNEL_SAMPLE_SIZE = 3;
@@ -31,13 +31,14 @@ private:
          1,  2,  1
     };
 
-    ImageInfo image;
-
     std::vector<float> gx;
     std::vector<float> gy;
     std::vector<float> pixels;
+    ImageParams imageParams;
 
-    void ApplyFilter();
+    void ApplyFilter(const ImageInfo& image);
+
+    [[nodiscard]] ImageInfo GetFilteredImage(const std::vector<float>& data) const;
 };
 
 #endif

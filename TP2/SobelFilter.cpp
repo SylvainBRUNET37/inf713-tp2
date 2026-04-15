@@ -7,29 +7,45 @@
 
 #include "AlgoUtils.h"
 
-SobelFilter::SobelFilter(ImageInfo baseImage) :
-	image{ std::move(baseImage) },
-	gx(image.GetImageSize(), 0.0f),
-	gy(image.GetImageSize(), 0.0f),
-	pixels(image.GetImageSize(), 0.0f)
+SobelFilter::SobelFilter(const ImageInfo& baseImage) :
+	gx(baseImage.GetImageSize(), 0.0f),
+	gy(baseImage.GetImageSize(), 0.0f),
+	pixels(baseImage.GetImageSize(), 0.0f),
+	imageParams{baseImage}
 {
-	ApplyFilter();
+	ApplyFilter(baseImage);
 }
 
-ImageInfo SobelFilter::GetHorizontalFilteredImage()
+ImageInfo SobelFilter::GetHorizontalFilteredImage() const
 {
+	return GetFilteredImage(gx);
 }
 
-ImageInfo SobelFilter::GetVerticalFilteredImage()
+ImageInfo SobelFilter::GetVerticalFilteredImage() const
 {
+	return GetFilteredImage(gy);
 }
 
-ImageInfo SobelFilter::Get()
+ImageInfo SobelFilter::Get() const
 {
-	return image;
+	return GetFilteredImage(pixels);
 }
 
-void SobelFilter::ApplyFilter()
+ImageInfo SobelFilter::GetFilteredImage(const std::vector<float>& data) const
+{
+	using namespace std;
+
+	vector<uint8_t> filteredPixels(imageParams.GetImageSize(), 0.0);
+
+	ranges::transform(data, filteredPixels.begin(), [](const float pixel)
+	{
+		return static_cast<uint8_t>(clamp(pixel, 0.0f, 255.0f));
+	});
+
+	return ImageInfo{std::move(filteredPixels), imageParams};
+}
+
+void SobelFilter::ApplyFilter(const ImageInfo& image)
 {
 	using namespace std;
 
@@ -48,7 +64,7 @@ void SobelFilter::ApplyFilter()
 				{
 					const int ix = indiceX + kx - 1;
 					const int iy = indiceY + ky - 1;
-					const int kernelIndice = AlgoUtils::ComputeIndice(ix, iy,imageSizeX);
+					const int kernelIndice = AlgoUtils::ComputeIndice(ix, iy, imageSizeX);
 
 					const float pixel = image.pixels[kernelIndice];
 
@@ -68,10 +84,4 @@ void SobelFilter::ApplyFilter()
 			pixels[pixelIndice] = magnitude;
 		}
 	}
-
-	ranges::transform(pixels, image.pixels.begin(),
-		[](const float pixel)
-		{
-			return static_cast<uint8_t>(pixel);
-		});
 }

@@ -54,18 +54,32 @@ int main()
 	// 2a - Appliquer un filtre Sobel en X. Ecrire le resultat dans
 	//      le fichier Gx.png.
 
-	const ImageInfo sobelImageX = SobelFilter::Apply(*baseImage);
+	const SobelFilter sobelFilter{*baseImage};
+
+	const ImageInfo gx = sobelFilter.GetHorizontalFilteredImage();
 	static constexpr auto SOBEL_IMAGE_X = "Gx.png";
-	if (not ImageUtils::EcrireImage(sobelImageX, SOBEL_IMAGE_X))
+	if (not ImageUtils::EcrireImage(gx, SOBEL_IMAGE_X))
 	{
 		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_X);
 	}
 
 	// 2b - Appliquer un filtre Sobel en Y. Ecrire le resultat dans
 	//      le fichier Gy.png.
+	const ImageInfo gy = sobelFilter.GetVerticalFilteredImage();
+	static constexpr auto SOBEL_IMAGE_Y = "Gy.png";
+	if (not ImageUtils::EcrireImage(gx, SOBEL_IMAGE_Y))
+	{
+		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_Y);
+	}
 
 	// 2c - Combiner les resulats Gx et Gy pour trouver les contours.
 	//      Ecrire le resultat dans barbara_countour.png.
+	const ImageInfo sobelFilteredImage = sobelFilter.Get();
+	static constexpr auto SOBEL_FILTERED_IMAGE = "barbara_countour.png";
+	if (not ImageUtils::EcrireImage(gx, SOBEL_FILTERED_IMAGE))
+	{
+		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_FILTERED_IMAGE);
+	}
 
 	// 3 -  Appliquer un filtre median 3x3 sur barbara_bruit.png. Ecrire le
 	//      resulat dans barbara_moinsdebruit.png
