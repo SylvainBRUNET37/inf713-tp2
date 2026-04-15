@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAUSSIAN_BLUR_H
+#define GAUSSIAN_BLUR_H
 
 #include <functional>
 #include <vector>
@@ -43,5 +44,7 @@ private:
 	void ForEachPixel(const std::function<void(int, int)>& function) const;
 	void ForEachKernelSample(const std::function<void(int)>& function) const;
 
-	[[nodiscard]] static int ComputeIndice(int xIndice, int yIndice, int xSize);
+	
 };
+
+#endif

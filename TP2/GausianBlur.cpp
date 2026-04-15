@@ -4,6 +4,7 @@
 #include <cassert>
 #include <format>
 
+#include "AlgoUtils.h"
 #include "ImageUtils.h"
 
 GaussianBlur::GaussianBlur(ImageInfo imageToBlur, const GausianBlurSettings settings) :
@@ -20,7 +21,7 @@ ImageInfo GaussianBlur::Apply(ImageInfo imageToBlur, const GausianBlurSettings b
 {
 	assert(blurSettings.kernelSize % 2 != 0 && "Cannot blur image with a pair kernel size");
 
-	return GaussianBlur{ std::move(imageToBlur), blurSettings }.BlurImage();
+	return GaussianBlur{std::move(imageToBlur), blurSettings}.BlurImage();
 }
 
 ImageInfo GaussianBlur::BlurImage()
@@ -76,7 +77,7 @@ void GaussianBlur::GaussianHorizontalPass()
 			weightSum += baseImagePixel * weight;
 		});
 
-		const int imageIndice = ComputeIndice(indiceX, indiceY, image.tailleX);
+		const int imageIndice = AlgoUtils::ComputeIndice(indiceX, indiceY, image.tailleX);
 		pixels[imageIndice] = weightSum;
 	});
 }
@@ -99,17 +100,12 @@ void GaussianBlur::GaussianVerticalPass()
 			weightSum += imagePixel * weight;
 		});
 
-		const int imageIndice = ComputeIndice(indiceX, indiceY, image.tailleX);
+		const int imageIndice = AlgoUtils::ComputeIndice(indiceX, indiceY, image.tailleX);
 		pixels[imageIndice] = weightSum;
 	});
 }
 
 // Utils
-
-int GaussianBlur::ComputeIndice(const int xIndice, const int yIndice, const int xSize)
-{
-	return xIndice + yIndice * xSize;
-}
 
 void GaussianBlur::ForEachPixel(const std::function<void(int, int)>& function) const
 {

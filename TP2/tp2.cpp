@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 // NOM: Sylvan Brunet
 // Compiler   : Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33145 for x86
-// C++ Version: c++20
+// C++ Version: C++20
 // INF 713 - TP 2 
 // A mettre le 20 avril 2026 ?
 /////////////////////////////////////////////////////////
@@ -12,11 +12,11 @@
 #include <format>
 #include <iostream>
 #include <memory>
-#include <ranges>
 
 #include "Data.h"
 #include "GausianBlur.h"
 #include "ImageUtils.h"
+#include "SobelFilter.h"
 
 int main()
 {
@@ -44,14 +44,22 @@ int main()
 	//      Note: http://dev.theomader.com/gaussian-kernel-calculator/
 	//            Pour les coefficients gaussiens.
 
+	const ImageInfo blurredImage = GaussianBlur::Apply(*baseImage);
 	static constexpr auto BLURRED_IMAGE_FILE = "barbara_flou.png";
-	if (not ImageUtils::EcrireImage(GaussianBlur::Apply(*baseImage), BLURRED_IMAGE_FILE))
+	if (not ImageUtils::EcrireImage(blurredImage, BLURRED_IMAGE_FILE))
 	{
-		std::cerr << std::format("Erreur de lecture de l'image {}", BLURRED_IMAGE_FILE);
+		cerr << format("Erreur d'ecriture de l'image {}", BLURRED_IMAGE_FILE);
 	}
 
 	// 2a - Appliquer un filtre Sobel en X. Ecrire le resultat dans
 	//      le fichier Gx.png.
+
+	const ImageInfo sobelImageX = SobelFilter::Apply(*baseImage);
+	static constexpr auto SOBEL_IMAGE_X = "Gx.png";
+	if (not ImageUtils::EcrireImage(sobelImageX, SOBEL_IMAGE_X))
+	{
+		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_X);
+	}
 
 	// 2b - Appliquer un filtre Sobel en Y. Ecrire le resultat dans
 	//      le fichier Gy.png.
