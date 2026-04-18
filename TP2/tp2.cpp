@@ -31,7 +31,7 @@ int main()
 	const auto baseImage = ImageUtils::LireImage(INPUT_FILE_NAME);
 	if (not baseImage)
 	{
-		cerr << format("Erreur de lecture de l'image {}", INPUT_FILE_NAME);
+		cout << format("Erreur de lecture de l'image {}", INPUT_FILE_NAME);
 		return EXIT_FAILURE;
 	}
 
@@ -49,7 +49,7 @@ int main()
 	static constexpr auto BLURRED_IMAGE_FILE = "images/barbara_flou.png";
 	if (not ImageUtils::EcrireImage(blurredImage, BLURRED_IMAGE_FILE))
 	{
-		cerr << format("Erreur d'ecriture de l'image {}", BLURRED_IMAGE_FILE);
+		cout << format("Erreur d'ecriture de l'image {}", BLURRED_IMAGE_FILE);
 	}
 
 	// 2a - Appliquer un filtre Sobel en X. Ecrire le resultat dans
@@ -61,7 +61,7 @@ int main()
 	static constexpr auto SOBEL_IMAGE_X = "images/Gx.png";
 	if (not ImageUtils::EcrireImage(gx, SOBEL_IMAGE_X))
 	{
-		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_X);
+		cout << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_X);
 	}
 
 	// 2b - Appliquer un filtre Sobel en Y. Ecrire le resultat dans
@@ -71,7 +71,7 @@ int main()
 	static constexpr auto SOBEL_IMAGE_Y = "images/Gy.png";
 	if (not ImageUtils::EcrireImage(gy, SOBEL_IMAGE_Y))
 	{
-		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_Y);
+		cout << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_Y);
 	}
 
 	// 2c - Combiner les resulats Gx et Gy pour trouver les contours.
@@ -81,7 +81,7 @@ int main()
 	static constexpr auto SOBEL_FILTERED_IMAGE = "images/barbara_countour.png";
 	if (not ImageUtils::EcrireImage(sobelFilteredImage, SOBEL_FILTERED_IMAGE))
 	{
-		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_FILTERED_IMAGE);
+		cout << format("Erreur d'ecriture de l'image {}", SOBEL_FILTERED_IMAGE);
 	}
 
 	// 3 -  Appliquer un filtre median 3x3 sur barbara_bruit.png. Ecrire le
@@ -91,7 +91,7 @@ int main()
 	const auto noisedImage = ImageUtils::LireImage(BARBARA_BRUIT_FILE);
 	if (not noisedImage)
 	{
-		cerr << format("Erreur de lecture de l'image {}", BARBARA_BRUIT_FILE);
+		cout << format("Erreur de lecture de l'image {}", BARBARA_BRUIT_FILE);
 		return EXIT_FAILURE;
 	}
 
@@ -99,8 +99,10 @@ int main()
 	static constexpr auto DENOISED_IMAGE = "images/barbara_moinsdebruit.png";
 	if (not ImageUtils::EcrireImage(denoisedImage, DENOISED_IMAGE))
 	{
-		cerr << format("Erreur d'ecriture de l'image {}", DENOISED_IMAGE);
+		cout << format("Erreur d'ecriture de l'image {}", DENOISED_IMAGE);
 	}
 
-	return 0;
+	cout << "Success !\n";
+
+	return EXIT_SUCCESS;
 }
