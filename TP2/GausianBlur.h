@@ -44,18 +44,6 @@ private:
 	// Utils
 
 	template <typename Func>
-	void ForEachPixel(Func&& function) const
-	{
-		for (int indiceX = 0; indiceX < image.tailleX; ++indiceX)
-		{
-			for (int indiceY = 0; indiceY < image.tailleY; ++indiceY)
-			{
-				function(indiceX, indiceY);
-			}
-		}
-	}
-
-	template <typename Func>
 	void ForEachKernelSample(Func&& function) const
 	{
 		const auto kernelRadius = settings.KernelRadius();

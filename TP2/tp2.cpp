@@ -26,7 +26,7 @@ int main()
 	// Charger une image en memoire
 	/////////////////////////////////////////////////////////
 
-	static constexpr auto INPUT_FILE_NAME = "bike.png";
+	static constexpr auto INPUT_FILE_NAME = "barbara.png";
 	const auto baseImage = ImageUtils::LireImage(INPUT_FILE_NAME);
 	if (not baseImage)
 	{
@@ -85,6 +85,16 @@ int main()
 
 	// 3 -  Appliquer un filtre median 3x3 sur barbara_bruit.png. Ecrire le
 	//      resulat dans barbara_moinsdebruit.png
+
+	static constexpr auto BARBARA_BRUIT_FILE = "barbara_bruit.png";
+	const auto noisedImage = ImageUtils::LireImage(BARBARA_BRUIT_FILE);
+	if (not noisedImage)
+	{
+		cerr << format("Erreur de lecture de l'image {}", BARBARA_BRUIT_FILE);
+		return EXIT_FAILURE;
+	}
+
+	
 
 	return 0;
 }

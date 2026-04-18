@@ -61,7 +61,7 @@ void GaussianBlur::ComputeKernel()
 
 void GaussianBlur::GaussianHorizontalPass()
 {
-	ForEachPixel([&](const int indiceX, const int indiceY)
+	AlgoUtils::ForEach(image.tailleX, image.tailleY,[&](const int indiceX, const int indiceY)
 	{
 		float weightSum = 0.0f;
 
@@ -84,7 +84,7 @@ void GaussianBlur::GaussianHorizontalPass()
 
 void GaussianBlur::GaussianVerticalPass()
 {
-	ForEachPixel([&](const int indiceX, const int indiceY)
+	AlgoUtils::ForEach(image.tailleX, image.tailleY, [&](const int indiceX, const int indiceY)
 	{
 		float weightSum = 0.0f;
 

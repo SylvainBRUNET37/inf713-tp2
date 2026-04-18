@@ -54,7 +54,8 @@ void SobelFilter::ApplyFilter(const ImageInfo& image)
 		const int pixelIndice = AlgoUtils::ComputeIndice(indiceX, indiceY, imageSizeX);
 
 		// Compute gx & gy
-		ForEachKernelSample([&](const int kernelIndiceX, const int kernelIndiceY)
+		AlgoUtils::For(KERNEL_SAMPLE_SIZE, KERNEL_SAMPLE_SIZE,
+			[&](const int kernelIndiceX, const int kernelIndiceY)
 		{
 			const int kernelPixelIndiceX = indiceX + kernelIndiceX - 1;
 			const int kernelPixelIndiceY = indiceY + kernelIndiceY - 1;

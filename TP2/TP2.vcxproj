@@ -155,6 +155,7 @@
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="GausianBlur.cpp" />
     <ClCompile Include="ImageUtils.cpp" />
+    <ClCompile Include="MedianFilter.cpp" />
     <ClCompile Include="SobelFilter.cpp" />
     <ClCompile Include="stb_implementation.cpp" />
     <ClCompile Include="tp2.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Data.h" />
     <ClInclude Include="GausianBlur.h" />
     <ClInclude Include="ImageUtils.h" />
+    <ClInclude Include="MedianFilter.h" />
     <ClInclude Include="SobelFilter.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stb_image_write.h" />

@@ -54,18 +54,6 @@ private:
             }
         }
     }
-
-    template <typename Func>
-    static void ForEachKernelSample(Func&& function)
-    {
-        for (int indiceX = 0; indiceX < KERNEL_SAMPLE_SIZE; ++indiceX)
-        {
-            for (int indiceY = 0; indiceY < KERNEL_SAMPLE_SIZE; ++indiceY)
-            {
-                function(indiceX, indiceY);
-            }
-        }
-    }
 };
 
 #endif
