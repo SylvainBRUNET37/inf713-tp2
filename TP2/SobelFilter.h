@@ -37,8 +37,35 @@ private:
     ImageParams imageParams;
 
     void ApplyFilter(const ImageInfo& image);
+    void ComputeGradientMagnitude(int pixelIndice);
 
     [[nodiscard]] ImageInfo GetFilteredImage(const std::vector<float>& data) const;
+
+    // Utils
+
+    template <typename Func>
+    void ForEachPixel(Func&& function) const
+    {
+        for (int indiceX = 1; indiceX < imageParams.tailleX - 1; ++indiceX)
+        {
+            for (int indiceY = 1; indiceY < imageParams.tailleY - 1; ++indiceY)
+            {
+                function(indiceX, indiceY);
+            }
+        }
+    }
+
+    template <typename Func>
+    static void ForEachKernelSample(Func&& function)
+    {
+        for (int indiceX = 0; indiceX < KERNEL_SAMPLE_SIZE; ++indiceX)
+        {
+            for (int indiceY = 0; indiceY < KERNEL_SAMPLE_SIZE; ++indiceY)
+            {
+                function(indiceX, indiceY);
+            }
+        }
+    }
 };
 
 #endif

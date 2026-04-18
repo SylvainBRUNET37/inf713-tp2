@@ -47,41 +47,38 @@ ImageInfo SobelFilter::GetFilteredImage(const std::vector<float>& data) const
 
 void SobelFilter::ApplyFilter(const ImageInfo& image)
 {
+	const int imageSizeX = image.tailleX;
+
+	ForEachPixel([&](const int indiceX, const int indiceY)
+	{
+		const int pixelIndice = AlgoUtils::ComputeIndice(indiceX, indiceY, imageSizeX);
+
+		// Compute gx & gy
+		ForEachKernelSample([&](const int kx, const int ky)
+		{
+			const int ix = indiceX + kx - 1;
+			const int iy = indiceY + ky - 1;
+			const int kernelIndice = AlgoUtils::ComputeIndice(ix, iy, imageSizeX);
+
+			const float pixel = image.pixels[kernelIndice];
+
+			const float kxVal = horizontalKernel[ky * 3 + kx];
+			const float kyVal = verticalKernel[ky * 3 + kx];
+
+			gx[pixelIndice] += pixel * kxVal;
+			gy[pixelIndice] += pixel * kyVal;
+		});
+
+		ComputeGradientMagnitude(pixelIndice);
+	});
+}
+
+void SobelFilter::ComputeGradientMagnitude(const int pixelIndice)
+{
 	using namespace std;
 
-	const auto imageSizeX = image.tailleX;
-	const auto imageSizeY = image.tailleY;
+	const float magnitude = sqrt(
+		gx[pixelIndice] * gx[pixelIndice] + gy[pixelIndice] * gy[pixelIndice]);
 
-	for (int indiceX = 1; indiceX < imageSizeX - 1; ++indiceX)
-	{
-		for (int indiceY = 1; indiceY < imageSizeY - 1; ++indiceY)
-		{
-			const int pixelIndice = AlgoUtils::ComputeIndice(indiceX, indiceY, imageSizeX);
-
-			for (int kx = 0; kx < KERNEL_SAMPLE_SIZE; ++kx)
-			{
-				for (int ky = 0; ky < KERNEL_SAMPLE_SIZE; ++ky)
-				{
-					const int ix = indiceX + kx - 1;
-					const int iy = indiceY + ky - 1;
-					const int kernelIndice = AlgoUtils::ComputeIndice(ix, iy, imageSizeX);
-
-					const float pixel = image.pixels[kernelIndice];
-
-					const float kxVal = horizontalKernel[ky * 3 + kx];
-					const float kyVal = verticalKernel[ky * 3 + kx];
-
-					gx[pixelIndice] += pixel * kxVal;
-					gy[pixelIndice] += pixel * kyVal;
-				}
-			}
-
-			float magnitude = sqrt(
-				gx[pixelIndice] * gx[pixelIndice] + gy[pixelIndice] * gy[pixelIndice]);
-
-			magnitude = min(magnitude, 255.0f);
-
-			pixels[pixelIndice] = magnitude;
-		}
-	}
+	pixels[pixelIndice] = ranges::min(magnitude, 255.0f);
 }

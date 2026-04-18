@@ -104,26 +104,3 @@ void GaussianBlur::GaussianVerticalPass()
 		pixels[imageIndice] = weightSum;
 	});
 }
-
-// Utils
-
-void GaussianBlur::ForEachPixel(const std::function<void(int, int)>& function) const
-{
-	for (int indiceX = 0; indiceX < image.tailleX; ++indiceX)
-	{
-		for (int indiceY = 0; indiceY < image.tailleY; ++indiceY)
-		{
-			function(indiceX, indiceY);
-		}
-	}
-}
-
-void GaussianBlur::ForEachKernelSample(const std::function<void(int)>& function) const
-{
-	const auto kernelRadius = settings.KernelRadius();
-
-	for (int sampleIndice = -kernelRadius; sampleIndice <= kernelRadius; ++sampleIndice)
-	{
-		function(sampleIndice);
-	}
-}

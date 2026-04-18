@@ -41,10 +41,30 @@ private:
 	void GaussianHorizontalPass();
 	void GaussianVerticalPass();
 
-	void ForEachPixel(const std::function<void(int, int)>& function) const;
-	void ForEachKernelSample(const std::function<void(int)>& function) const;
+	// Utils
 
-	
+	template <typename Func>
+	void ForEachPixel(Func&& function) const
+	{
+		for (int indiceX = 0; indiceX < image.tailleX; ++indiceX)
+		{
+			for (int indiceY = 0; indiceY < image.tailleY; ++indiceY)
+			{
+				function(indiceX, indiceY);
+			}
+		}
+	}
+
+	template <typename Func>
+	void ForEachKernelSample(Func&& function) const
+	{
+		const auto kernelRadius = settings.KernelRadius();
+
+		for (int sampleIndice = -kernelRadius; sampleIndice <= kernelRadius; ++sampleIndice)
+		{
+			function(sampleIndice);
+		}
+	}
 };
 
 #endif
