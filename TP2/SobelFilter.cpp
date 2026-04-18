@@ -57,20 +57,20 @@ void SobelFilter::ApplyFilter(const ImageInfo& image)
 		AlgoUtils::For(KERNEL_SAMPLE_SIZE, KERNEL_SAMPLE_SIZE,
 		               [&](const int kernelIndiceX, const int kernelIndiceY)
 		               {
-			               const int kernelIndice = AlgoUtils::ComputeSampleIndice(
+			               const int sampleIndice = AlgoUtils::ComputeSampleIndice(
 				               indiceX, indiceY,
 				               kernelIndiceX, kernelIndiceY,
 				               imageSizeX, image.tailleY, KERNEL_SAMPLE_SIZE);
 
-			               const float pixel = image.pixels[kernelIndice];
+			               const float pixel = image.pixels[sampleIndice];
 
-			               const float kernelValueX = horizontalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE +
+			               const float sampleValueX = horizontalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE +
 				               kernelIndiceX];
-			               const float kernelValueY = verticalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE +
+			               const float sampleValueY = verticalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE +
 				               kernelIndiceX];
 
-			               gx[pixelIndice] += pixel * kernelValueX;
-			               gy[pixelIndice] += pixel * kernelValueY;
+			               gx[pixelIndice] += pixel * sampleValueX;
+			               gy[pixelIndice] += pixel * sampleValueY;
 		               });
 
 		ComputeGradientMagnitude(pixelIndice);

@@ -9,9 +9,10 @@ ImageInfo MedianFilter::Denoise(ImageInfo image)
 {
 	using namespace std;
 
-	vector<uint8_t> pixels(image.GetImageSize(), 0);
 	const int imageSizeX = image.tailleX;
 	const int imageSizeY = image.tailleY;
+
+	vector<uint8_t> pixels(image.GetImageSize(), 0);
 
 	vector<uint8_t> kernelValues;
 	kernelValues.reserve(KERNEL_SIZE);
@@ -21,11 +22,11 @@ ImageInfo MedianFilter::Denoise(ImageInfo image)
 		const int pixelIndice = AlgoUtils::ComputeIndice(indiceX, indiceY, imageSizeX);
 
 		AlgoUtils::For(KERNEL_SAMPLE_SIZE, KERNEL_SAMPLE_SIZE,
-		               [&](const int sampleIndiceX, const int sampleIndiceY)
+		               [&](const int kernelIndiceX, const int kernelIndiceY)
 		               {
 			               const int sampleIndice = AlgoUtils::ComputeSampleIndice(
 				               indiceX, indiceY,
-				               sampleIndiceX, sampleIndiceY,
+				               kernelIndiceX, kernelIndiceY,
 				               imageSizeX, imageSizeY, KERNEL_SAMPLE_SIZE);
 
 						   kernelValues.emplace_back(image.pixels[sampleIndice]);

@@ -27,7 +27,7 @@ int main()
 	// Charger une image en memoire
 	/////////////////////////////////////////////////////////
 
-	static constexpr auto INPUT_FILE_NAME = "barbara.png";
+	static constexpr auto INPUT_FILE_NAME = "images/barbara.png";
 	const auto baseImage = ImageUtils::LireImage(INPUT_FILE_NAME);
 	if (not baseImage)
 	{
@@ -46,7 +46,7 @@ int main()
 	//            Pour les coefficients gaussiens.
 
 	const ImageInfo blurredImage = GaussianBlur::Apply(*baseImage);
-	static constexpr auto BLURRED_IMAGE_FILE = "barbara_flou.png";
+	static constexpr auto BLURRED_IMAGE_FILE = "images/barbara_flou.png";
 	if (not ImageUtils::EcrireImage(blurredImage, BLURRED_IMAGE_FILE))
 	{
 		cerr << format("Erreur d'ecriture de l'image {}", BLURRED_IMAGE_FILE);
@@ -58,7 +58,7 @@ int main()
 	const SobelFilter sobelFilter{blurredImage};
 
 	const ImageInfo gx = sobelFilter.GetHorizontalFilteredImage();
-	static constexpr auto SOBEL_IMAGE_X = "Gx.png";
+	static constexpr auto SOBEL_IMAGE_X = "images/Gx.png";
 	if (not ImageUtils::EcrireImage(gx, SOBEL_IMAGE_X))
 	{
 		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_X);
@@ -68,7 +68,7 @@ int main()
 	//      le fichier Gy.png.
 
 	const ImageInfo gy = sobelFilter.GetVerticalFilteredImage();
-	static constexpr auto SOBEL_IMAGE_Y = "Gy.png";
+	static constexpr auto SOBEL_IMAGE_Y = "images/Gy.png";
 	if (not ImageUtils::EcrireImage(gy, SOBEL_IMAGE_Y))
 	{
 		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_IMAGE_Y);
@@ -78,7 +78,7 @@ int main()
 	//      Ecrire le resultat dans barbara_countour.png.
 
 	const ImageInfo sobelFilteredImage = sobelFilter.Get();
-	static constexpr auto SOBEL_FILTERED_IMAGE = "barbara_countour.png";
+	static constexpr auto SOBEL_FILTERED_IMAGE = "images/barbara_countour.png";
 	if (not ImageUtils::EcrireImage(sobelFilteredImage, SOBEL_FILTERED_IMAGE))
 	{
 		cerr << format("Erreur d'ecriture de l'image {}", SOBEL_FILTERED_IMAGE);
@@ -87,7 +87,7 @@ int main()
 	// 3 -  Appliquer un filtre median 3x3 sur barbara_bruit.png. Ecrire le
 	//      resulat dans barbara_moinsdebruit.png
 
-	static constexpr auto BARBARA_BRUIT_FILE = "barbara_bruit.png";
+	static constexpr auto BARBARA_BRUIT_FILE = "images/barbara_bruit.png";
 	const auto noisedImage = ImageUtils::LireImage(BARBARA_BRUIT_FILE);
 	if (not noisedImage)
 	{
@@ -96,7 +96,7 @@ int main()
 	}
 
 	const ImageInfo denoisedImage = MedianFilter::Denoise(*noisedImage);
-	static constexpr auto DENOISED_IMAGE = "barbara_moinsdebruit.png";
+	static constexpr auto DENOISED_IMAGE = "images/barbara_moinsdebruit.png";
 	if (not ImageUtils::EcrireImage(denoisedImage, DENOISED_IMAGE))
 	{
 		cerr << format("Erreur d'ecriture de l'image {}", DENOISED_IMAGE);
