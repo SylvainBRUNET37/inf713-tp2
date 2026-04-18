@@ -52,15 +52,15 @@ void SobelFilter::ApplyFilter(const ImageInfo& image)
 	const auto imageSizeX = image.tailleX;
 	const auto imageSizeY = image.tailleY;
 
-	for (int indiceY = 1; indiceY < imageSizeY - 1; ++indiceY)
+	for (int indiceX = 1; indiceX < imageSizeX - 1; ++indiceX)
 	{
-		for (int indiceX = 1; indiceX < imageSizeX - 1; ++indiceX)
+		for (int indiceY = 1; indiceY < imageSizeY - 1; ++indiceY)
 		{
 			const int pixelIndice = AlgoUtils::ComputeIndice(indiceX, indiceY, imageSizeX);
 
-			for (int ky = 0; ky < KERNEL_SAMPLE_SIZE; ++ky)
+			for (int kx = 0; kx < KERNEL_SAMPLE_SIZE; ++kx)
 			{
-				for (int kx = 0; kx < KERNEL_SAMPLE_SIZE; ++kx)
+				for (int ky = 0; ky < KERNEL_SAMPLE_SIZE; ++ky)
 				{
 					const int ix = indiceX + kx - 1;
 					const int iy = indiceY + ky - 1;
@@ -68,11 +68,11 @@ void SobelFilter::ApplyFilter(const ImageInfo& image)
 
 					const float pixel = image.pixels[kernelIndice];
 
-					const float kx_val = horizontalKernel[ky * 3 + kx];
-					const float ky_val = verticalKernel[ky * 3 + kx];
+					const float kxVal = horizontalKernel[ky * 3 + kx];
+					const float kyVal = verticalKernel[ky * 3 + kx];
 
-					gx[pixelIndice] += pixel * kx_val;
-					gy[pixelIndice] += pixel * ky_val;
+					gx[pixelIndice] += pixel * kxVal;
+					gy[pixelIndice] += pixel * kyVal;
 				}
 			}
 
