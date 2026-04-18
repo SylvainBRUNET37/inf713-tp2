@@ -16,6 +16,7 @@
 #include "Data.h"
 #include "GausianBlur.h"
 #include "ImageUtils.h"
+#include "MedianFilter.h"
 #include "SobelFilter.h"
 
 int main()
@@ -94,7 +95,12 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	
+	const ImageInfo denoisedImage = MedianFilter::Denoise(*noisedImage);
+	static constexpr auto DENOISED_IMAGE = "barbara_moinsdebruit.png";
+	if (not ImageUtils::EcrireImage(denoisedImage, DENOISED_IMAGE))
+	{
+		cerr << format("Erreur d'ecriture de l'image {}", DENOISED_IMAGE);
+	}
 
 	return 0;
 }

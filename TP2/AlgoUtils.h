@@ -5,6 +5,9 @@ namespace AlgoUtils
 {
 	[[nodiscard]] int ComputeIndice(int xIndice, int yIndice, int xSize);
 
+    [[nodiscard]] int ComputeSampleIndice(
+        int pixelX, int pixelY, int kernelX, int kernelY, int imageWidth, int imageHeight, int kernelSampleSize);
+
     template <typename Func>
     void For(const int sizeX, const int sizeY, Func&& function)
     {

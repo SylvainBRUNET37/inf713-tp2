@@ -55,21 +55,23 @@ void SobelFilter::ApplyFilter(const ImageInfo& image)
 
 		// Compute gx & gy
 		AlgoUtils::For(KERNEL_SAMPLE_SIZE, KERNEL_SAMPLE_SIZE,
-			[&](const int kernelIndiceX, const int kernelIndiceY)
-		{
-			const int kernelPixelIndiceX = indiceX + kernelIndiceX - 1;
-			const int kernelPixelIndiceY = indiceY + kernelIndiceY - 1;
-			const int kernelIndice = AlgoUtils::ComputeIndice(
-				kernelPixelIndiceX, kernelPixelIndiceY, imageSizeX);
+		               [&](const int kernelIndiceX, const int kernelIndiceY)
+		               {
+			               const int kernelIndice = AlgoUtils::ComputeSampleIndice(
+				               indiceX, indiceY,
+				               kernelIndiceX, kernelIndiceY,
+				               imageSizeX, image.tailleY, KERNEL_SAMPLE_SIZE);
 
-			const float pixel = image.pixels[kernelIndice];
+			               const float pixel = image.pixels[kernelIndice];
 
-			const float kernelValueX = horizontalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE + kernelIndiceX];
-			const float kernelValueY = verticalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE + kernelIndiceX];
+			               const float kernelValueX = horizontalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE +
+				               kernelIndiceX];
+			               const float kernelValueY = verticalKernel[kernelIndiceY * KERNEL_SAMPLE_SIZE +
+				               kernelIndiceX];
 
-			gx[pixelIndice] += pixel * kernelValueX;
-			gy[pixelIndice] += pixel * kernelValueY;
-		});
+			               gx[pixelIndice] += pixel * kernelValueX;
+			               gy[pixelIndice] += pixel * kernelValueY;
+		               });
 
 		ComputeGradientMagnitude(pixelIndice);
 	});
