@@ -35,12 +35,19 @@ ImageInfo SobelFilter::GetFilteredImage(const std::vector<float>& data) const
 {
 	using namespace std;
 
-	vector<uint8_t> filteredPixels(imageParams.GetImageSize(), 0.0);
+	auto [minIt, maxIt] = ranges::minmax_element(data);
+	const float minVal = *minIt;
+	const float maxVal = *maxIt;
 
-	ranges::transform(data, filteredPixels.begin(), [](const float pixel)
-	{
-		return static_cast<uint8_t>(clamp(pixel, 0.0f, 255.0f));
-	});
+	vector<uint8_t> filteredPixels(imageParams.GetImageSize());
+
+	ranges::transform(data, filteredPixels.begin(),
+		[=](const float pixel)
+		{
+			const float normalizedPixel = (pixel - minVal) / (maxVal - minVal);
+
+			return static_cast<uint8_t>(normalizedPixel * ImageInfo::MAX_INTENSITY);
+		});
 
 	return ImageInfo{std::move(filteredPixels), imageParams};
 }
